@@ -69,7 +69,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 	//PRICHODY
 	$prichody = [];
 	foreach($all_students_array as $prichod) {
-		$prichody[] = ["Pocet prichodov" => $prichod['pocet prichodov']];
+		if ($newDate > $school_start) {
+			$prichody[] = [
+				"Pocet prichodov" => $prichod['pocet prichodov'],
+				"Meskanie" => "Meskanie"
+			];
+		}
 
 		$encode_prichody = json_encode($prichody, JSON_PRETTY_PRINT);
 		file_put_contents($file_for_prichody, $encode_prichody);
