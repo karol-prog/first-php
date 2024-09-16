@@ -64,11 +64,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 		echo "Name: " . $student['name'] . " - Pocet prichodov: " . $student['pocet prichodov'] . "<br>";
 	}
 
-	//PRICHODY
 	print_r($all_students_array);
+
+	//PRICHODY
 	$prichody = [];
 	foreach($all_students_array as $prichod) {
-		$prichody[] = $prichod['pocet prichodov'];
+		$prichody[] = ["Pocet prichodov" => $prichod['pocet prichodov']];
+
 		$encode_prichody = json_encode($prichody, JSON_PRETTY_PRINT);
 		file_put_contents($file_for_prichody, $encode_prichody);
 	}

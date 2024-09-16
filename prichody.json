@@ -1,7 +1,14 @@
 [
-    12,
-    3,
-    10,
-    1,
-    1
+    {
+        "Pocet prichodov": 1
+    },
+    {
+        "Pocet prichodov": 1
+    },
+    {
+        "Pocet prichodov": 10
+    },
+    {
+        "Pocet prichodov": 2
+    }
 ]
