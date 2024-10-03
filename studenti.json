@@ -1,14 +1,22 @@
 [
     {
+        "name": "SOfe",
+        "pocet prichodov": 1
+    },
+    {
         "name": "Karol",
-        "pocet prichodov": 1
+        "pocet prichodov": 3
     },
     {
-        "name": "JOZO",
-        "pocet prichodov": 1
+        "name": "Jozko",
+        "pocet prichodov": 4
     },
     {
-        "name": "fads",
+        "name": "dasdsad",
+        "pocet prichodov": 4
+    },
+    {
+        "name": "dasdadas",
         "pocet prichodov": 1
     }
 ]

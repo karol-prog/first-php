@@ -6,7 +6,7 @@
 	<title>Students Attendance</title>
 </head>
 <body>
-	<form action="index.php" method="get" >
+	<form action="index.php" method="post" >
 		<label for="student_name">Student name:</label>
 		<input type="text" name="student_name" placeholder="Student name" required>
 		<button type="submit">Submit</button>
@@ -19,10 +19,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 	$newDate = new DateTime();
 	$formatted_date = $newDate->format("d-m-Y H:i:s");
 
+	//times
 	$school_start = new DateTime('08:00:00');
 	$evening_start = new DateTime('20:00:00');
 	$midnight = new DateTime('23:59:59');
 
+	//Files
 	$file_for_times_log = "times.txt";
 	$file_for_students_name = "studenti.json";
 	$file_for_prichody = "prichody.json";
@@ -31,6 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 
 	$student_name = ($_SERVER["REQUEST_METHOD"] === "POST") ? $_POST["student_name"] : $_GET["student_name"];
 	$student_exists = false;
+
 
 	if (file_exists($file_for_students_name)) {
 		$get_json_data = file_get_contents($file_for_students_name);
@@ -55,9 +58,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 		$all_students_array[] = $new_student;
 	}
 
-	//update json
-	$encode_all_students = json_encode($all_students_array, JSON_PRETTY_PRINT);
-	file_put_contents($file_for_students_name, $encode_all_students);
+	class LogStudents {
+		public static function putStudentsToFile($file, $students) {
+			$encode_all_students = json_encode($students, JSON_PRETTY_PRINT);
+			file_put_contents($file, $encode_all_students);
+		}
+	}
+
+	LogStudents::putStudentsToFile($file_for_students_name, $all_students_array);
 
 	echo "Updated student data: <br>";
 	foreach ($all_students_array as $student) {
@@ -67,13 +75,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 	print_r($all_students_array);
 
 	//PRICHODY
+	class Prichody {
+		public $pocet_prichodov;
+		public $meskanie;
+
+		public function __construct($pocet_prichodov, $meskanie) {
+			$this->pocet_prichodov = $pocet_prichodov;
+			$this->meskanie = $meskanie;
+		}
+	}
+
 	$prichody = [];
 	foreach($all_students_array as $prichod) {
 		if ($newDate > $school_start) {
-			$prichody[] = [
-				"Pocet prichodov" => $prichod['pocet prichodov'],
-				"Meskanie" => "Meskanie"
-			];
+			$prichody[] = new Prichody(
+				$prichod['pocet prichodov'],
+				"meskanie"
+			);
 		}
 
 		$encode_prichody = json_encode($prichody, JSON_PRETTY_PRINT);
