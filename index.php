@@ -7,8 +7,8 @@
 </head>
 <body>
 	<form action="index.php" method="post" >
-		<label for="student_name">Student name:</label>
-		<input type="text" name="student_name" placeholder="Student name" required>
+		<label for="studentName">Student name:</label>
+		<input type="text" name="studentName" placeholder="Student name" required>
 		<button type="submit">Submit</button>
 	</form>
 </body>
@@ -17,99 +17,90 @@
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET") {
 	$newDate = new DateTime();
-	$formatted_date = $newDate->format("d-m-Y H:i:s");
+	$formattedDate = $newDate->format("d-m-Y H:i:s");
 
 	//times
-	$school_start = new DateTime('08:00:00');
-	$evening_start = new DateTime('20:00:00');
+	$schoolStart = new DateTime('08:00:00');
+	$eveningStart = new DateTime('20:00:00');
 	$midnight = new DateTime('23:59:59');
 
 	//Files
-	$file_for_times_log = "times.txt";
-	$file_for_students_name = "studenti.json";
-	$file_for_prichody = "prichody.json";
+	$fileForTimesLog = "times.txt";
+	$fileForStudentsName = "studenti.json";
+	$fileForPrichody = "prichody.json";
 
 	$message = " - You are late";
 
-	$student_name = ($_SERVER["REQUEST_METHOD"] === "POST") ? $_POST["student_name"] : $_GET["student_name"];
-	$student_exists = false;
+	$studentName = isset($_POST["studentName"]) ? $_POST["studentName"] : (isset($_GET["studentName"]) ? $_GET["studentName"] : null);
+	$studentExists = false;
 
-
-	if (file_exists($file_for_students_name)) {
-		$get_json_data = file_get_contents($file_for_students_name);
-		$all_students_array = json_decode($get_json_data, true);
-	} else {
-		$all_students_array = [];
+	if (!$studentName) {
+		die("Student name is required.");
 	}
 
-	foreach ($all_students_array as &$value) {
-		if ($value['name'] === $student_name) {
+	if (file_exists($fileForStudentsName)) {
+		$getJsonData = file_get_contents($fileForStudentsName);
+		$allStudentsArray = json_decode($getJsonData, true);
+	} else {
+		$allStudentsArray = [];
+	}
+
+	foreach ($allStudentsArray as &$value) {
+		if ($value['name'] === $studentName) {
 			$value['pocet prichodov']++;
-			$student_exists = true;
+			$studentExists = true;
 			break;
 		}
 	}
 
-	if (!$student_exists) {
-		$new_student = [
-			"name" => $student_name,
+	if (!$studentExists) {
+		$newStudent = [
+			"name" => $studentName,
 			"pocet prichodov" => 1
 		];
-		$all_students_array[] = $new_student;
+		$allStudentsArray[] = $newStudent;
 	}
 
-	class LogStudents {
-		public static function putStudentsToFile($file, $students) {
-			$encode_all_students = json_encode($students, JSON_PRETTY_PRINT);
-			file_put_contents($file, $encode_all_students);
-		}
-	}
+	include_once "Classes/students.php";
 
-	LogStudents::putStudentsToFile($file_for_students_name, $all_students_array);
+	LogStudents::putStudentsToFile($fileForStudentsName, $allStudentsArray);
 
 	echo "Updated student data: <br>";
-	foreach ($all_students_array as $student) {
+	foreach ($allStudentsArray as $student) {
 		echo "Name: " . $student['name'] . " - Pocet prichodov: " . $student['pocet prichodov'] . "<br>";
 	}
 
-	print_r($all_students_array);
+	print_r($allStudentsArray);
 
 	//PRICHODY
-	class Prichody {
-		public $pocet_prichodov;
-		public $meskanie;
 
-		public function __construct($pocet_prichodov, $meskanie) {
-			$this->pocet_prichodov = $pocet_prichodov;
-			$this->meskanie = $meskanie;
-		}
-	}
+	include_once "Classes/prichody.php";
 
 	$prichody = [];
-	foreach($all_students_array as $prichod) {
-		if ($newDate > $school_start) {
+	foreach($allStudentsArray as $prichod) {
+		if ($newDate > $schoolStart) {
 			$prichody[] = new Prichody(
 				$prichod['pocet prichodov'],
 				"meskanie"
 			);
 		}
 
-		$encode_prichody = json_encode($prichody, JSON_PRETTY_PRINT);
-		file_put_contents($file_for_prichody, $encode_prichody);
+		$encodePrichody = json_encode($prichody, JSON_PRETTY_PRINT);
+		file_put_contents($fileForPrichody, $encodePrichody);
 	}
 	print_r($prichody);
 
 	function putTimesToFile($file, $times, $name) {
 		global $message;
-		global $school_start;
-		global $evening_start;
+		global $schoolStart;
+		global $eveningStart;
 		global $midnight;
 
-		$current_time = new DateTime($times);
+		$currentTime = new DateTime($times);
 
-		if ($current_time >= $evening_start && $current_time <= $midnight) {
+		if ($currentTime >= $eveningStart && $currentTime <= $midnight) {
 			die("Attendance cannot be recorded after 8 PM.");
-		} else if ($current_time > $school_start) {
+		} else if ($currentTime > $schoolStart) {
 			$entry = "$times - $name$message";
 		} else {
 			$entry = "$times - $name";
@@ -119,10 +110,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 	}
 
 	function getAllTimesFromFile($file) {
-		$all_file_times = file_get_contents($file);
-		echo "This is the all times in the times.txt:<br><pre>{$all_file_times}</pre>";
+		$allFileTimes = file_get_contents($file);
+		echo "This is the all times in the times.txt:<br><pre>{$allFileTimes}</pre>";
 	}
 
-	putTimesToFile($file_for_times_log, $formatted_date, $student_name);
-	getAllTimesFromFile($file_for_times_log);
+	putTimesToFile($fileForTimesLog, $formattedDate, $studentName);
+	getAllTimesFromFile($fileForTimesLog);
 }

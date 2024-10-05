@@ -1,22 +1,14 @@
 [
     {
-        "pocet_prichodov": 1,
+        "pocetPrichodov": 1,
         "meskanie": "meskanie"
     },
     {
-        "pocet_prichodov": 3,
+        "pocetPrichodov": 1,
         "meskanie": "meskanie"
     },
     {
-        "pocet_prichodov": 4,
-        "meskanie": "meskanie"
-    },
-    {
-        "pocet_prichodov": 4,
-        "meskanie": "meskanie"
-    },
-    {
-        "pocet_prichodov": 1,
+        "pocetPrichodov": 1,
         "meskanie": "meskanie"
     }
 ]
