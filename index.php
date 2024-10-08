@@ -34,6 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 	$studentName = isset($_POST["studentName"]) ? $_POST["studentName"] : (isset($_GET["studentName"]) ? $_GET["studentName"] : null);
 	$studentExists = false;
 
+	$connection = include 'database.php';
+
 	if (!$studentName) {
 		die("Student name is required.");
 	}
@@ -45,25 +47,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" || $_SERVER["REQUEST_METHOD"] == "GET")
 		$allStudentsArray = [];
 	}
 
-	foreach ($allStudentsArray as &$value) {
-		if ($value['name'] === $studentName) {
-			$value['pocet prichodov']++;
-			$studentExists = true;
-			break;
+	if (is_array($allStudentsArray)) {
+		foreach ($allStudentsArray as &$value) {
+			if ($value['name'] === $studentName) {
+				$value['pocet prichodov']++;
+				$studentExists = true;
+
+				$sql = "SELECT * FROM studentsAttendence WHERE firstName = '$studentName'";
+				$result = mysqli_query($connection, $sql);
+
+				if (mysqli_num_rows($result) > 0) {
+					// Student exists, update the numberOfAttendence
+					$sql = "UPDATE studentsAttendence SET numberOfAttendence = numberOfAttendence + 1 WHERE firstName = '$studentName'";
+					mysqli_query($connection, $sql);
+					echo "Student attendance updated.<br>";
+				} else {
+					// Student doesn't exist, insert new student
+					$sql = "INSERT INTO studentsAttendence (firstName, numberOfAttendence) VALUES ('$studentName', 1)";
+					mysqli_query($connection, $sql);
+					echo "New student added with attendance = 1.<br>";
+				}
+
+				break;
+			}
 		}
+	} else {
+		echo "Error: No student data available." . "<br>";
 	}
+
+
+	include_once "Classes/students.php";
 
 	if (!$studentExists) {
 		$newStudent = [
 			"name" => $studentName,
 			"pocet prichodov" => 1
 		];
+		LogStudents::putStudentToDatabase($newStudent);
 		$allStudentsArray[] = $newStudent;
 	}
-
-	include_once "Classes/students.php";
-
-	LogStudents::putStudentsToFile($fileForStudentsName, $allStudentsArray);
 
 	echo "Updated student data: <br>";
 	foreach ($allStudentsArray as $student) {
